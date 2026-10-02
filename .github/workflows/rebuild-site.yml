@@ -1,0 +1,22 @@
+# Rebuild dictum.sciscribesolutions.com whenever a release is published here, so the website's
+# Download button picks up the new installer (the site resolves the newest release at build time).
+name: Rebuild website
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  rebuild:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger the Cloudflare Pages deploy hook
+        env:
+          HOOK: ${{ secrets.CF_DEPLOY_HOOK }}
+        run: |
+          test -n "$HOOK" || { echo "CF_DEPLOY_HOOK is not set"; exit 1; }
+          curl -fsS -X POST "$HOOK" > /dev/null
+          echo "Website rebuild requested."
